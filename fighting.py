@@ -88,7 +88,10 @@ class Sprite:
 		"draws the sprite component of entity"
 		corner1,corner2 = getCorners(self.entity)
 		position = map(add,corner1,self.factory.origin)
-		pygame.draw.rect(self.factory.surf,black,position + self.entity.w,1)
+		if self.entity.img != None:
+			self.factory.surf.blit(self.entity.img, position+self.entity.s)
+		else:
+			pygame.draw.rect(self.factory.surf,black,position + self.entity.w,1)
 class SpriteFactory:
 	def __init__(self,surf,origin):
 		"a sprite factory has the main surface surf, and origin point in camera"
@@ -107,10 +110,11 @@ class SpriteFactory:
 			s.draw()
 # Entity is mvc
 class Entity:
-	def __init__(self,s=None,w=None):
+	def __init__(self,img=None,s=None,w=None):
 		"entity has s (displacement) and w (width and height)"
 		self.s = [0.0,0.0] if s == None else s
 		self.w = [0.0,0.0] if w == None else w
+		self.img = None if img == None else img
 		self.physics = None
 		self.sprite = None
 
@@ -119,12 +123,13 @@ def __main__():
 	fpsClock = pygame.time.Clock()
 	surf = pygame.display.set_mode((640,480))
 	pygame.display.set_caption("Game")
+	ball = pygame.image.load('ball.gif')
 	# make all the factories
 	pf = PhysicsFactory()
 	sf = SpriteFactory(surf,[320,240])
 	# make all the entities
-	player1 = Entity(w=[50.0,100.0])
-	player2 = Entity(w=[50.0,100.0],s=[100.0,0.0])
+	player1 = Entity(ball,w=[50.0,100.0])
+	player2 = Entity(ball,w=[50.0,100.0],s=[100.0,0.0])
 	floor = Entity(w=[600.0,40.0], s=[0,100.0])
 	wall1 = Entity(w=[140.0,600.0], s=[300.0,0.0])
 	wall2 = Entity(w=[140.0,600.0], s=[-300.0,0.0])
