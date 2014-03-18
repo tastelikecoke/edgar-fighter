@@ -36,6 +36,12 @@ class Physics: # Physics is model
 			self.v[1] += speed
 			self.entity.s[1] -= 1
 			self.controlled = True
+	def duck(self):
+		self.entity.w[1] = 60
+		self.entity.s[1] += 20
+	def unduck(self):
+		self.entity.w[1] = 100
+		self.entity.s[1] -= 20
 	def resolve(self, jp):
 		i = self.entity
 		ip = self
@@ -76,14 +82,14 @@ class PhysicsFactory:
 		return p
 	def update(self):
 		"update all physics components"
-		for p in self.players:
+		for i in range(2):
+			p = self.players[i]
+			q = self.players[(i+1)%2]
 			p.update()
 			for b in self.backdrops:
 				p.resolve(b)
-		if self.players[1].controlled == True:
-			self.players[1].resolve(self.players[0])
-		elif self.players[0].controlled == True:
-			self.players[0].resolve(self.players[1])
+			if p.controlled == True:
+				p.resolve(q)
 		for p in self.players:
 			p.controlled = not p.onFloor
 class Sprite: # Sprite is view
@@ -116,8 +122,10 @@ class SpriteFactory:
 		for s in self.sprites:
 			s.draw()
 class Controller:
-	def __init__(self, dictionary):
+	def __init__(self, dictionary, downdictionary, updictionary):
 		self.dictionary = dictionary
+		self.downdictionary = downdictionary
+		self.updictionary = updictionary
 		self.presses = []
 	def handle(self, events):
 		for event in events:
@@ -126,8 +134,16 @@ class Controller:
 				sys.exit()
 			if event.type == KEYDOWN:
 				self.presses.append(event.key)
+				try:
+					self.downdictionary[event.key]()
+				except KeyError:
+					pass
 			if event.type == KEYUP:
 				self.presses.remove(event.key)
+				try:
+					self.updictionary[event.key]()
+				except KeyError:
+					pass
 		for p in self.presses:
 			try:
 				self.dictionary[p]()
@@ -169,13 +185,23 @@ def __main__():
 	sf.make(floor)
 	sf.make(wall1)
 	sf.make(wall2)
-	controller = Controller({
-		K_LEFT: (lambda: player1.physics.push(-20.0)),
-		K_RIGHT: (lambda: player1.physics.push(20.0)),
-		K_UP: (lambda: player1.physics.jump(-300.0)),
-		K_a: (lambda: player2.physics.push(-20.0)),
-		K_d: (lambda: player2.physics.push(20.0)),
-		K_w: (lambda: player2.physics.jump(-300.0)),}
+	controller = Controller(
+		{
+			K_LEFT: (lambda: player1.physics.push(-20.0)),
+			K_RIGHT: (lambda: player1.physics.push(20.0)),
+			K_UP: (lambda: player1.physics.jump(-300.0)),
+			K_a: (lambda: player2.physics.push(-20.0)),
+			K_d: (lambda: player2.physics.push(20.0)),
+			K_w: (lambda: player2.physics.jump(-300.0)),
+		},
+		{
+			K_DOWN: player1.physics.duck,
+			K_s: player2.physics.duck,
+		},
+		{
+			K_DOWN: player1.physics.unduck,
+			K_s: player2.physics.unduck,
+		}
 		)
 	# game loop
 	while True:
