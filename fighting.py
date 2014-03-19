@@ -21,6 +21,7 @@ class Physics: # Physics is model
 		self.kind = "floor" if kind == None else kind
 		self.v = [0.0,0.0] if v == None else v
 		self.gravity = 0.0 if gravity == None else gravity
+		self.touchLeft = False #hack hack
 	def update(self):
 		"update the physics component of entity"
 		self.v[1] += self.gravity
@@ -51,6 +52,7 @@ class Physics: # Physics is model
 		if strictlygreater(i2,j1) and strictlygreater(j2,i1): # enter here if two bounding boxes collide
 			if jp.kind == "floor": # enter here if target bounding box is a floor
 				self.onFloor = True
+				self.touchLeft = False #hack hack
 				if j2[1] > i2[1]:
 					i.s[1] = j.s[1] - (j.w[1] + i.w[1])/2
 					ip.v[1] = 0
@@ -59,13 +61,17 @@ class Physics: # Physics is model
 					ip.v[1] = 0
 			else: # enter here if target bounding box is anything else
 				if j2[0] > i2[0]:
+					if jp.kind == "wall" and not self.onFloor: #hack hack
+						self.touchLeft = True #hack hack
 					i.s[0] = j.s[0] - (j.w[0] + i.w[0])/2
 					ip.v[0] = 0
 					jp.v[0] = 0
 				else:
 					i.s[0] = j.s[0] + (j.w[0] + i.w[0])/2
 					ip.v[0] = 0
-					jp.v[0] = 0
+					jp.v[0] = 0				
+				if self.touchLeft: #hack hack
+					i.s[0] -= 1 #hack hack
 class PhysicsFactory:
 	def __init__(self):
 		"a physics factory has backdrops and players"
@@ -92,7 +98,7 @@ class PhysicsFactory:
 				p.resolve(q)
 		for p in self.players:
 			p.controlled = not p.onFloor
-class Sprite: # Sprite is view
+class Sprite:
 	def __init__(self,factory,entity):
 		"a sprite has parent factory and parent entity"
 		self.factory = factory
@@ -101,7 +107,7 @@ class Sprite: # Sprite is view
 		"draws the sprite component of entity"
 		corner1,corner2 = getCorners(self.entity)
 		position = map(add,corner1,self.factory.origin)
-		positionp = map(add,position,(-30,0))
+		positionp = map(add,position,(-50,0))
 		if self.entity.img != None:
 			self.factory.surf.blit(self.entity.img, positionp+self.entity.s)
 		pygame.draw.rect(self.factory.surf,black,position + self.entity.w,1)
@@ -123,11 +129,14 @@ class SpriteFactory:
 			s.draw()
 class Controller:
 	def __init__(self, dictionary, downdictionary, updictionary):
+		"a controller has dictionary, updictionary, downdictionary"
 		self.dictionary = dictionary
 		self.downdictionary = downdictionary
 		self.updictionary = updictionary
 		self.presses = []
+		self.presstory = []
 	def handle(self, events):
+		"handles events of pygame"
 		for event in events:
 			if event.type == QUIT:
 				pygame.quit()
@@ -169,8 +178,8 @@ def __main__():
 	pf = PhysicsFactory()
 	sf = SpriteFactory(surf,[320,240])
 	# make all the entities
-	player1 = Entity(ball,w=[50.0,100.0])
-	player2 = Entity(ball,w=[50.0,100.0],s=[100.0,0.0])
+	player1 = Entity(ball,w=[20.0,100.0])
+	player2 = Entity(ball,w=[20.0,100.0],s=[100.0,0.0])
 	floor = Entity(w=[600.0,40.0], s=[0,100.0])
 	wall1 = Entity(w=[140.0,600.0], s=[300.0,0.0])
 	wall2 = Entity(w=[140.0,600.0], s=[-300.0,0.0])
@@ -185,6 +194,7 @@ def __main__():
 	sf.make(floor)
 	sf.make(wall1)
 	sf.make(wall2)
+	# make a magic-everything-controller
 	controller = Controller(
 		{
 			K_LEFT: (lambda: player1.physics.push(-20.0)),
@@ -211,5 +221,4 @@ def __main__():
 		pf.update()
 		controller.handle(pygame.event.get())
 		fpsClock.tick(60)
-
 __main__()
