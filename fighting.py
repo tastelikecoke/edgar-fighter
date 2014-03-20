@@ -1,4 +1,4 @@
-import pygame, sys, copy
+import pygame, sys, copy, cPickle
 from operator import sub,mul,add,div
 from pygame.locals import *
 white = pygame.Color(255,255,255)
@@ -178,8 +178,8 @@ def __main__():
 	pf = PhysicsFactory()
 	sf = SpriteFactory(surf,[320,240])
 	# make all the entities
-	player1 = Entity(ball,w=[20.0,100.0])
-	player2 = Entity(ball,w=[20.0,100.0],s=[100.0,0.0])
+	player1 = Entity(ball, w=[20.0,100.0])
+	player2 = Entity(ball, w=[20.0,100.0],s=[100.0,0.0])
 	floor = Entity(w=[600.0,40.0], s=[0,100.0])
 	wall1 = Entity(w=[140.0,600.0], s=[300.0,0.0])
 	wall2 = Entity(w=[140.0,600.0], s=[-300.0,0.0])
