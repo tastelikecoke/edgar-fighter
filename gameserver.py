@@ -26,7 +26,9 @@ class Physics: # Physics is model
 		"update the physics component of entity"
 		self.v[1] += self.gravity
 		originals = self.entity.s
+		#print self.entity.s
 		self.entity.s = map(add,self.entity.s, [v/30.0 for v in self.v])
+		#print self.entity.s
 		self.v[0] *= 0.70
 		self.onFloor = False
 	def push(self, speed):
@@ -144,22 +146,23 @@ def main():
 	connsocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 	connsocket.bind((host,port))
 	connsocket.listen(5)
-	#player1 = Entity(w=[20.0,100.0])
-	#li = [player1, player1]
-	#cPickle.dumps(li)
 	
+	# [MAIN SERVER THREAD] accepts connections from two players and makes a game instance (ideally should fork a process, pero threading muna)
+	cmdsock1, ip1 = connsocket.accept()
+	updsock1, ip1 = connsocket.accept()
+	cmdsock2, ip2 = connsocket.accept()
+	updsock2, ip2 = connsocket.accept()
+	cmdsock1.send('1')
+	cmdsock2.send('2')
+	tr = threading.Thread(target=instance, args = (cmdsock1, cmdsock2, updsock1, updsock2, ip1, ip2))
+	tr.daemon = True
+	tr.start()
 	while True:
-		# [MAIN SERVER THREAD] accepts connections from two players and makes a game instance (ideally should fork a process, pero threading muna)
-		isock1, ip1 = connsocket.accept()
-		isock2, ip2 = connsocket.accept()
-		isock1.send('1')
-		isock2.send('2')
-		tr = threading.Thread(target=instance, args = (isock1, ip1, isock2, ip2))
-		tr.daemon = True
-		tr.start()
+		pass
 	
-def instance(sock1, ip1, sock2, ip2):
+def instance(cmdsock1, cmdsock2, updsock1, updsock2, ip1, ip2):
 	# [INSTANCE] game instance between two players
+	fps = pygame.time.Clock()
 	# make all the factories
 	pf = PhysicsFactory()
 	#sf = SpriteFactory(surf,[320,240])
@@ -178,23 +181,23 @@ def instance(sock1, ip1, sock2, ip2):
 	#initial dump
 	pli = [player1.w, player1.s, player2.w, player2.s, floor.w, floor.s, wall1.w, wall1.s, wall2.w, wall2.s]
 	pck = cPickle.dumps(pli)
-	#print pck
-	sock1.send(pck)
-	sock2.send(pck)
+	updsock1.send(pck)
+	updsock2.send(pck)
 	
-	tr1 = threading.Thread(target=superrecv, args=(sock1,ip1,player1))
-	tr2 = threading.Thread(target=superrecv, args=(sock2,ip2,player2))
+	tr1 = threading.Thread(target=superrecv, args=(cmdsock1,ip1,player1,pf))
+	tr2 = threading.Thread(target=superrecv, args=(cmdsock2,ip2,player2,pf))
 	tr1.start()
 	tr2.start()
 	# [UPDATE] send state updates to players
 	while True:
+		pf.update()
 		pre = [player1.w, player1.s, player2.w, player2.s, floor.w, floor.s, wall1.w, wall1.s, wall2.w, wall2.s]
 		pack = cPickle.dumps(pre)
-		sock1.send(pack)
-		sock2.send(pack)
-		time.sleep(0.033333)
+		updsock1.send(pack)
+		updsock2.send(pack)
+		fps.tick(60)
 
-def superrecv(sock, addr, player):
+def superrecv(sock, addr, player, pf):
 	# [INPUT] receive keyboard input from players
 	downdic = {
 			'a': (lambda: player.physics.push(-20.0)),
@@ -220,6 +223,6 @@ def superrecv(sock, addr, player):
 						downdic[press[1]]()
 					except KeyError:
 						pass
-			print reborn
+			#print reborn
 
 main()

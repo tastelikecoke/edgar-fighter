@@ -121,9 +121,9 @@ class SpriteFactory:
 		self.surf = surf
 		self.sprites = []
 		self.origin = origin
-	def make(self,entity):
+	def make(self,entity,img=None):
 		"makes sprite components for entity"
-		s = Sprite(self,entity)
+		s = Sprite(self,entity,img)
 		self.sprites.append(s)
 		entity.sprite = s
 		return s
@@ -141,19 +141,21 @@ class Entity:
 		self.sprite = None
 
 def main():
-	sock = socket.socket()
+	cmdsock = socket.socket()
+	updsock = socket.socket()
 	host = '127.0.0.1'
 	port = 8888
-	sock.connect((host,port))
-	id = sock.recv(BUFFER_SIZE)
+	cmdsock.connect((host,port))
+	updsock.connect((host,port))
+	id = cmdsock.recv(BUFFER_SIZE)
 	
 	pygame.init()
 	surf = pygame.display.set_mode((640,480))
 	pygame.display.set_caption("Game")
 	fps = pygame.time.Clock()
-	tr = threading.Thread(target=Update, args=(sock,id,surf))
+	tr = threading.Thread(target=Update, args=(updsock,id,surf))
 	tr.start()
-	# [CONTROLS] get keyboard inputs
+	# [INPUT] get keyboard inputs
 	while True:
 		li = []
 		events = pygame.event.get()
@@ -165,8 +167,8 @@ def main():
 				li.append(appendhelper(event.key,id,event.type))
 		if len(li) > 0:
 			stri = cPickle.dumps(li)
-			numBytes = sock.send(stri)
-		fps.tick(30)
+			numBytes = cmdsock.send(stri)
+		fps.tick(60)
 	
 def Update(socket,id,surf):
 	# [UPDATE] get screen updates from server
@@ -174,31 +176,38 @@ def Update(socket,id,surf):
 	ball = pygame.image.load('ball.gif')
 	sf = SpriteFactory(surf,[320,240])
 	#initial entity dumps
-	entstr = socket.recv(BUFFER_SIZE)
-	try:
-		entli = cPickle.loads(entstr)
-	except UnpicklingError:
-		print entstr
+	entstr = ''
+	while True:
+		temp = socket.recv(BUFFER_SIZE)
+		entstr += temp
+		if len(temp) < BUFFER_SIZE:
+			break
+	entli = cPickle.loads(entstr)
 	p1 = Entity(w=entli[0], s=entli[1])
 	p2 = Entity(w=entli[2], s=entli[3])
 	fl = Entity(w=entli[4], s=entli[5])
 	w1 = Entity(w=entli[6], s=entli[7])
 	w2 = Entity(w=entli[8], s=entli[9])
-	p1.img = ball
-	p2.img = ball
-	sf.make(p1)
-	sf.make(p2)
+	sf.make(p1,ball)
+	sf.make(p2,ball)
 	sf.make(fl)
 	sf.make(w1)
 	sf.make(w2)
 	
 	while True:
 		surf.fill(white)
-		stri = socket.recv(BUFFER_SIZE)
+		sf.draw()
+		pygame.display.update()
+		stri = ''
+		while True:
+			temp = socket.recv(BUFFER_SIZE)
+			stri += temp
+			if len(temp) < BUFFER_SIZE:
+				break
 		try:
-			entityli = cPickle.loads(entstr)
-		except UnpicklingError:
-			print entityli
+			entityli = cPickle.loads(stri)
+		finally:
+			pass
 		p1.w = entityli[0]
 		p1.s = entityli[1]
 		p2.w = entityli[2]
@@ -209,11 +218,6 @@ def Update(socket,id,surf):
 		w1.s = entityli[7]
 		w2.w = entityli[8]
 		w2.s = entityli[9]
-		print p1.w
-		print p1.s
-		sf.draw()
-		pygame.display.update()
-		fps.tick(30)
 		
 def appendhelper(keytype,id,mode):
 	stri = id
