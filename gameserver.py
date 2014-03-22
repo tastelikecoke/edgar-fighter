@@ -184,8 +184,8 @@ def instance(cmdsock1, cmdsock2, updsock1, updsock2, ip1, ip2):
 	updsock1.send(pck)
 	updsock2.send(pck)
 	
-	tr1 = threading.Thread(target=superrecv, args=(cmdsock1,ip1,player1,pf))
-	tr2 = threading.Thread(target=superrecv, args=(cmdsock2,ip2,player2,pf))
+	tr1 = threading.Thread(target=Input, args=(cmdsock1,ip1,player1))
+	tr2 = threading.Thread(target=Input, args=(cmdsock2,ip2,player2))
 	tr1.start()
 	tr2.start()
 	# [UPDATE] send state updates to players
@@ -197,8 +197,9 @@ def instance(cmdsock1, cmdsock2, updsock1, updsock2, ip1, ip2):
 		updsock2.send(pack)
 		fps.tick(60)
 
-def superrecv(sock, addr, player, pf):
+def Input(sock, addr, player):
 	# [INPUT] receive keyboard input from players
+	buttonToggle = [False, False]
 	downdic = {
 			'a': (lambda: player.physics.push(-20.0)),
 			'd': (lambda: player.physics.push(20.0)),
@@ -208,21 +209,42 @@ def superrecv(sock, addr, player, pf):
 	updic = {
 			's': player.physics.unduck,
 	}
+	trr = threading.Thread(target=Toggle, args=(player,buttonToggle))
+	trr.start()
 	while True:
 		msg = sock.recv(BUFFER_SIZE)
 		if msg != '':
 			reborn = cPickle.loads(msg)
 			for press in reborn:
+				print press
 				if press[2] == 'U':
 					try:
-						updic[press[1]]
+						if press[1] == 'a':
+							buttonToggle[0] = False
+						elif press[1] == 'd':
+							buttonToggle[1] = False
+						else:
+							updic[press[1]]()
 					except KeyError:
 						pass
 				elif press[2] == 'D':
 					try:
-						downdic[press[1]]()
+						if press[1] == 'a':
+							buttonToggle[0] = True
+						elif press[1] == 'd':
+							buttonToggle[1] = True
+						else:
+							downdic[press[1]]()
 					except KeyError:
 						pass
-			#print reborn
+
+def Toggle(player, buttonToggle):
+	fps = pygame.time.Clock()
+	while True:
+		if buttonToggle[0]:
+			player.physics.push(-20.0)
+		if buttonToggle[1]:
+			player.physics.push(20.0)
+		fps.tick(60)
 
 main()
