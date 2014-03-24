@@ -34,7 +34,7 @@ def main():
 def Update(socket,id,surf):
 	# [UPDATE] get screen updates from server
 	fps = pygame.time.Clock()
-	ball = pygame.image.load('ball.gif')
+	ball = pygame.image.load('ball.png')
 	bg = pygame.image.load('bg.png')
 	sf = SpriteFactory(surf,[320,240],specials=[bg])
 	#initial entity dumps
@@ -80,7 +80,8 @@ def Update(socket,id,surf):
 		w1.s = entityli[7]
 		w2.w = entityli[8]
 		w2.s = entityli[9]
-		
+		p1.a = entityli[10]
+		p2.a = entityli[11]
 def appendhelper(keytype,id,mode):
 	stri = id
 	if keytype == K_a:

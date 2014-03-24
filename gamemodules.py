@@ -1,4 +1,5 @@
 from operator import sub,mul,add,div
+import copy
 import pygame
 from pygame.locals import *
 white = pygame.Color(255,255,255)
@@ -30,9 +31,19 @@ class Physics: # Physics is model
 		self.entity.s = map(add,self.entity.s, [v/30.0 for v in self.v])
 		self.v[0] *= 0.70
 		self.onFloor = False
+		if -1. < self.v[0] and self.v[0] < 1.:
+			self.stop()
 	def push(self, speed):
 		self.v[0] += speed
+		print self.entity.a
+		if speed > 0.0 and self.entity.a['state'] != 1:
+			self.entity.a = {'state':1, 'time':36}
+		elif speed < 0.0 and self.entity.a['state'] != 2:
+			self.entity.a = {'state':2, 'time':36}
 		self.controlled = True
+	def stop(self):
+		if self.entity.a['state'] == 1 or self.entity.a['state'] == 2:
+			self.entity.a = {'state':0, 'time':0}
 	def jump(self, speed):
 		if self.onFloor:
 			self.v[1] += speed
@@ -99,19 +110,36 @@ class PhysicsFactory:
 				p.resolve(q)
 		for p in self.players:
 			p.controlled = not p.onFloor
+
 class Sprite:
-	def __init__(self,factory,entity,img=None):
+	def __init__(self,factory,entity,image=None):
 		"a sprite has parent factory and parent entity"
-		self.img = None if img == None else img
+		self.image = image
 		self.factory = factory
 		self.entity = entity
+	def getImage(self):
+		a = self.entity.a
+		newImage = self.image.copy()
+		if a['time'] == 0:
+			a['state'] = 0
+			return self.image
+		elif a['state'] == 1:
+			newImage = pygame.transform.rotate(newImage, a['time']*10)
+			newImage.set_colorkey(white)
+			return newImage
+		elif a['state'] == 2:
+			newImage = pygame.transform.rotate(newImage, -a['time']*10)
+			newImage.set_colorkey(white)
+			return newImage
+		else:
+			return self.image
 	def draw(self):
 		"draws the sprite component of entity"
 		corner1,corner2 = getCorners(self.entity)
 		position = map(add,corner1,self.factory.origin)
 		positionp = map(add,position,(-50,0))
-		if self.img != None:
-			self.factory.surf.blit(self.img, positionp+self.entity.s)
+		if self.image != None:
+			self.factory.surf.blit(self.getImage(), positionp+self.entity.s)
 		pygame.draw.rect(self.factory.surf,black,position + self.entity.w,1)
 class SpriteFactory:
 	def __init__(self,surf,origin,specials):
@@ -135,9 +163,15 @@ class SpriteFactory:
 		pygame.draw.rect(self.surf,black,(0,0,100,100),1)
 # Entity is mvc
 class Entity:
-	def __init__(self,s=None,w=None):
-		"entity has s (displacement) and w (width and height)"
+	def __init__(self,s=None,w=None,a=None):
+		"entity has s (displacement) and w (width and height) and a (animation state)"
 		self.s = [0.0,0.0] if s == None else s
 		self.w = [0.0,0.0] if w == None else w
+		self.a = {'state':0,'time':0} if a == None else a
 		self.physics = None
 		self.sprite = None
+	def updateAnimation(self):
+		if self.a['time'] == 0:
+			self.a['state'] = 0
+		else:
+			self.a['time'] -= 1

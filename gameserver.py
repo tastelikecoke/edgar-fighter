@@ -41,8 +41,9 @@ def instance(cmdsock1, cmdsock2, updsock1, updsock2, ip1, ip2):
 	pf.make(floor,gravity=0.0,kind="floor")
 	pf.make(wall1,gravity=0.0,kind="wall")
 	pf.make(wall2,gravity=0.0,kind="wall")
+	
 	#initial dump
-	pli = [player1.w, player1.s, player2.w, player2.s, floor.w, floor.s, wall1.w, wall1.s, wall2.w, wall2.s]
+	pli = [player1.w, player1.s, player2.w, player2.s, floor.w, floor.s, wall1.w, wall1.s, wall2.w, wall2.s, player1.a, player2.a]
 	pck = cPickle.dumps(pli)
 	updsock1.send(pck)
 	updsock2.send(pck)
@@ -54,7 +55,9 @@ def instance(cmdsock1, cmdsock2, updsock1, updsock2, ip1, ip2):
 	# [UPDATE] send state updates to players
 	while True:
 		pf.update()
-		pre = [player1.w, player1.s, player2.w, player2.s, floor.w, floor.s, wall1.w, wall1.s, wall2.w, wall2.s]
+		player1.updateAnimation()
+		player2.updateAnimation()
+		pre = [player1.w, player1.s, player2.w, player2.s, floor.w, floor.s, wall1.w, wall1.s, wall2.w, wall2.s, player1.a, player2.a]
 		pack = cPickle.dumps(pre)
 		updsock1.send(pack)
 		updsock2.send(pack)
