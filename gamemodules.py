@@ -34,6 +34,7 @@ class Physics: # Physics is model
 		if -1. < self.v[0] and self.v[0] < 1.:
 			self.stop()
 	def push(self, speed):
+		"function that makes the player walk or run (also changes sprite animation)"
 		self.v[0] += speed
 		print self.entity.a
 		if speed > 0.0 and self.entity.a['state'] != 1:
@@ -42,20 +43,25 @@ class Physics: # Physics is model
 			self.entity.a = {'state':2, 'time':36}
 		self.controlled = True
 	def stop(self):
+		"function that indicates the sprite animation to stop"
 		if self.entity.a['state'] == 1 or self.entity.a['state'] == 2:
 			self.entity.a = {'state':0, 'time':0}
 	def jump(self, speed):
+		"function that makes the player jump"
 		if self.onFloor:
 			self.v[1] += speed
 			self.entity.s[1] -= 1
 			self.controlled = True
 	def duck(self):
+		"function for player ducking"
 		self.entity.w[1] = 60
 		self.entity.s[1] += 20
 	def unduck(self):
+		"function for player unducking after a ducking"
 		self.entity.w[1] = 100
 		self.entity.s[1] -= 20
 	def resolve(self, jp):
+		"function that resolves player's collision with another player `jp'"
 		i = self.entity
 		ip = self
 		j = jp.entity
@@ -118,6 +124,7 @@ class Sprite:
 		self.factory = factory
 		self.entity = entity
 	def getImage(self):
+		"gets appropriate image from the set of images (animation and all)"
 		a = self.entity.a
 		newImage = self.image.copy()
 		if a['time'] == 0:
@@ -159,9 +166,8 @@ class SpriteFactory:
 		self.surf.blit(self.bg, (0,0,100,100))
 		for s in self.sprites:
 			s.draw()
-		# magic sprite drawing shit
+		# magic sprite drawing shit [#MAGIC IN PROGRESS#]
 		pygame.draw.rect(self.surf,black,(0,0,100,100),1)
-# Entity is mvc
 class Entity:
 	def __init__(self,s=None,w=None,a=None):
 		"entity has s (displacement) and w (width and height) and a (animation state)"
@@ -171,6 +177,7 @@ class Entity:
 		self.physics = None
 		self.sprite = None
 	def updateAnimation(self):
+		"decreases the animation timer by 1 as an update"
 		if self.a['time'] == 0:
 			self.a['state'] = 0
 		else:

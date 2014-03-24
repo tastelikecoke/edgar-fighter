@@ -45,16 +45,16 @@ def Update(socket,id,surf):
 		if len(temp) < BUFFER_SIZE:
 			break
 	entli = cPickle.loads(entstr)
-	p1 = Entity(w=entli[0], s=entli[1])
-	p2 = Entity(w=entli[2], s=entli[3])
-	fl = Entity(w=entli[4], s=entli[5])
-	w1 = Entity(w=entli[6], s=entli[7])
-	w2 = Entity(w=entli[8], s=entli[9])
-	sf.make(p1,ball)
-	sf.make(p2,ball)
-	sf.make(fl)
-	sf.make(w1)
-	sf.make(w2)
+	player1 = Entity(w=entli[0], s=entli[1])
+	player2 = Entity(w=entli[2], s=entli[3])
+	floor = Entity(w=entli[4], s=entli[5])
+	wall1 = Entity(w=entli[6], s=entli[7])
+	wall2 = Entity(w=entli[8], s=entli[9])
+	sf.make(player1,ball)
+	sf.make(player2,ball)
+	sf.make(floor)
+	sf.make(wall1)
+	sf.make(wall2)
 	
 	while True:
 		surf.fill(white)
@@ -67,21 +67,10 @@ def Update(socket,id,surf):
 			if len(temp) < BUFFER_SIZE:
 				break
 		try:
-			entityli = cPickle.loads(stri)
+			entitylist = cPickle.loads(stri)
 		finally:
 			pass
-		p1.w = entityli[0]
-		p1.s = entityli[1]
-		p2.w = entityli[2]
-		p2.s = entityli[3]
-		fl.w = entityli[4]
-		fl.s = entityli[5]
-		w1.w = entityli[6]
-		w1.s = entityli[7]
-		w2.w = entityli[8]
-		w2.s = entityli[9]
-		p1.a = entityli[10]
-		p2.a = entityli[11]
+		player1.w, player1.s, player2.w, player2.s, floor.w, floor.s, wall1.w, wall1.s, wall2.w, wall2.s, player1.a, player2.a = entitylist
 def appendhelper(keytype,id,mode):
 	stri = id
 	if keytype == K_a:
