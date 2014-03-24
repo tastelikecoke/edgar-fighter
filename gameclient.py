@@ -35,7 +35,8 @@ def Update(socket,id,surf):
 	# [UPDATE] get screen updates from server
 	fps = pygame.time.Clock()
 	ball = pygame.image.load('ball.gif')
-	sf = SpriteFactory(surf,[320,240])
+	bg = pygame.image.load('bg.png')
+	sf = SpriteFactory(surf,[320,240],specials=[bg])
 	#initial entity dumps
 	entstr = ''
 	while True:

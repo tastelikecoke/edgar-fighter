@@ -114,11 +114,12 @@ class Sprite:
 			self.factory.surf.blit(self.img, positionp+self.entity.s)
 		pygame.draw.rect(self.factory.surf,black,position + self.entity.w,1)
 class SpriteFactory:
-	def __init__(self,surf,origin):
+	def __init__(self,surf,origin,specials):
 		"a sprite factory has the main surface surf, and origin point in camera"
 		self.surf = surf
 		self.sprites = []
 		self.origin = origin
+		self.bg = specials[0]
 	def make(self,entity,img=None):
 		"makes sprite components for entity"
 		s = Sprite(self,entity,img)
@@ -127,8 +128,11 @@ class SpriteFactory:
 		return s
 	def draw(self):
 		"draws all sprites"
+		self.surf.blit(self.bg, (0,0,100,100))
 		for s in self.sprites:
 			s.draw()
+		# magic sprite drawing shit
+		pygame.draw.rect(self.surf,black,(0,0,100,100),1)
 # Entity is mvc
 class Entity:
 	def __init__(self,s=None,w=None):
