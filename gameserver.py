@@ -56,7 +56,7 @@ def instance(cmdsock1, cmdsock2, updsock1, updsock2, ip1, ip2):
 		pf.update()
 		player1.updateAnimation()
 		player2.updateAnimation()
-		state = [player1.w, player1.s, player2.w, player2.s, floor.w, floor.s, wall1.w, wall1.s, wall2.w, wall2.s, player1.a, player2.a]
+		state = [player1.w, player1.s, player2.w, player2.s, player1.a, player2.a]
 		packedState = cPickle.dumps(state)
 		updsock1.send(packedState)
 		updsock2.send(packedState)

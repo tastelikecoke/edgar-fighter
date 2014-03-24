@@ -70,7 +70,7 @@ def Update(socket,id,surf):
 			entitylist = cPickle.loads(stri)
 		finally:
 			pass
-		player1.w, player1.s, player2.w, player2.s, floor.w, floor.s, wall1.w, wall1.s, wall2.w, wall2.s, player1.a, player2.a = entitylist
+		player1.w, player1.s, player2.w, player2.s, player1.a, player2.a = entitylist
 def appendhelper(keytype,id,mode):
 	stri = id
 	if keytype == K_a:
