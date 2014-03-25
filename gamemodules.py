@@ -149,9 +149,10 @@ class Sprite:
 			newImage.set_colorkey(white)
 		elif a['state'] == 4:
 			newImage = self.imageset[3][a['time']]
-			newImage.set_colorkey(white)
 		else:
 			newImage = self.imageset[0][0]
+		newImage.set_colorkey(white)
+		newImage = newImage.convert()
 		if self.entity.id == 1:
 			player2pos = self.factory.sprites[1].entity.s[0]
 			if self.entity.s[0] - player2pos >= 0:
@@ -160,6 +161,7 @@ class Sprite:
 			player1pos = self.factory.sprites[0].entity.s[0]
 			if self.entity.s[0] - player1pos >= 0:
 				return pygame.transform.flip(newImage, True, False)
+		
 		return newImage
 	def draw(self):
 		"draws the sprite component of entity"
