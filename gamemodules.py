@@ -40,7 +40,7 @@ class Physics: # Physics is model
 		if speed > 0.0 and self.entity.a['state'] != 1:
 			self.entity.a = {'state':1, 'time':0}
 		elif speed < 0.0 and self.entity.a['state'] != 2:
-			self.entity.a = {'state':2, 'time':6}
+			self.entity.a = {'state':2, 'time':20}
 		self.controlled = True
 	def stop(self):
 		"function that indicates the sprite animation to stop"
@@ -134,28 +134,33 @@ class Sprite:
 	def getImage(self):
 		"gets appropriate image from the set of images (animation and all)"
 		a = self.entity.a
-		#newImage = self.image.copy()
+		newImage = None
 		if a['time'] == 0:
 			a['state'] = 0
-			return self.imageset[0][0]
+			newImage = self.imageset[0][0]
 		elif a['state'] == 1:
-			newImage = self.imageset[1][a['time']%7]
+			newImage = self.imageset[1][a['time']]
 			newImage.set_colorkey(white)
-			return newImage
 		elif a['state'] == 2:
-			newImage = self.imageset[1][a['time']%7]
+			newImage = self.imageset[1][a['time']]
 			newImage.set_colorkey(white)
-			return newImage
 		elif a['state'] == 3:
 			newImage = self.imageset[2][0]
 			newImage.set_colorkey(white)
-			return newImage
 		elif a['state'] == 4:
-			newImage = self.imageset[3][a['time']%4]
+			newImage = self.imageset[3][a['time']]
 			newImage.set_colorkey(white)
-			return newImage
 		else:
-			return self.imageset[0][0]
+			newImage = self.imageset[0][0]
+		if self.entity.id == 1:
+			player2pos = self.factory.sprites[1].entity.s[0]
+			if self.entity.s[0] - player2pos >= 0:
+				return pygame.transform.flip(newImage, True, False)
+		else:
+			player1pos = self.factory.sprites[0].entity.s[0]
+			if self.entity.s[0] - player1pos >= 0:
+				return pygame.transform.flip(newImage, True, False)
+		return newImage
 	def draw(self):
 		"draws the sprite component of entity"
 		corner1,corner2 = getCorners(self.entity)
@@ -185,8 +190,9 @@ class SpriteFactory:
 		# magic sprite drawing shit [#MAGIC IN PROGRESS#]
 		pygame.draw.rect(self.surf,black,(0,0,100,100),1)
 class Entity:
-	def __init__(self,s=None,w=None,a=None):
+	def __init__(self,id=None,s=None,w=None,a=None):
 		"entity has s (displacement) and w (width and height) and a (animation state)"
+		self.id = None if id == None else id
 		self.s = [0.0,0.0] if s == None else s
 		self.w = [0.0,0.0] if w == None else w
 		self.a = {'state':0,'time':0} if a == None else a
@@ -194,13 +200,20 @@ class Entity:
 		self.sprite = None
 	def updateAnimation(self):
 		"decreases the animation timer by 1 as an update"
-		st = self.a['state']
-		if self.a['time'] >= 7 or self.a['time'] < 0:
-			self.a['state'] = 0
-			self.a['time'] = 0
-		elif self.a['state'] == 1:
+		if self.a['state'] == 1:
 			self.a['time'] += 1
+			if self.a['time'] >= 21:
+				self.resetAnimation()
 		elif self.a['state'] == 2:
 			self.a['time'] -= 1
+			if self.a['time'] < 0:
+				self.resetAnimation()
 		elif self.a['state'] == 4:
 			self.a['time'] += 1
+			if self.a['time'] >= 12:
+				self.resetAnimation()
+		else:
+			pass
+	def resetAnimation(self):
+		self.a['state'] = 0
+		self.a['time'] = 0

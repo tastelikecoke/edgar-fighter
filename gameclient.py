@@ -45,9 +45,13 @@ def Update(socket,id,surf):
 	for i in range(7):
 		stri = '../edgar-fighter/Swordsman/Forward and Backward/'+str(i+1)+'.png'
 		swordiemoves[1].append(pygame.image.load(stri))
+		swordiemoves[1].append(pygame.image.load(stri))
+		swordiemoves[1].append(pygame.image.load(stri))
 	swordiemoves[2].append(pygame.image.load('../edgar-fighter/Swordsman/Crouch/1.png'))
 	for i in range(4):
 		stri = '../edgar-fighter/Swordsman/Hit/'+str(i+1)+'.png'
+		swordiemoves[3].append(pygame.image.load(stri))
+		swordiemoves[3].append(pygame.image.load(stri))
 		swordiemoves[3].append(pygame.image.load(stri))
 	bg = pygame.image.load('bg.png')
 	sf = SpriteFactory(surf,[320,240],specials=[bg])
@@ -59,8 +63,8 @@ def Update(socket,id,surf):
 		if len(temp) < BUFFER_SIZE:
 			break
 	entli = cPickle.loads(entstr)
-	player1 = Entity(w=entli[0], s=entli[1])
-	player2 = Entity(w=entli[2], s=entli[3])
+	player1 = Entity(1,w=entli[0], s=entli[1])
+	player2 = Entity(2,w=entli[2], s=entli[3])
 	floor = Entity(w=entli[4], s=entli[5])
 	wall1 = Entity(w=entli[6], s=entli[7])
 	wall2 = Entity(w=entli[8], s=entli[9])

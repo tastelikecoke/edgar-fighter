@@ -29,8 +29,8 @@ def instance(cmdsock1, cmdsock2, updsock1, updsock2, ip1, ip2):
 	# make all the factories
 	pf = PhysicsFactory()
 	# make all the entities
-	player1 = Entity(w=[20.0,100.0])
-	player2 = Entity(w=[20.0,100.0],s=[100.0,0.0])
+	player1 = Entity(1,w=[20.0,100.0])
+	player2 = Entity(2,w=[20.0,100.0],s=[100.0,0.0])
 	floor = Entity(w=[800.0,40.0], s=[0,100.0])
 	wall1 = Entity(w=[140.0,600.0], s=[390.0,0.0])
 	wall2 = Entity(w=[140.0,600.0], s=[-390.0,0.0])
