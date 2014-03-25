@@ -1,0 +1,1 @@
+Sequence: Same as Earthquake, 10 on ground and keep still, summon L-1 and R-1 then random shaking, L-2 and R-2 then random shaking, L-3 and R-3 then random shaking, transition from L-4 and R-4 to L-8 and R-8

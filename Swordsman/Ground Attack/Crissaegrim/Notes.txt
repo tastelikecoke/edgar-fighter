@@ -1,0 +1,1 @@
+Seq: 1-12 then fire C-1 then change to C-2 and remain in C-2 while moving, if end go to C-3 to C-6 

@@ -64,7 +64,7 @@ def instance(cmdsock1, cmdsock2, updsock1, updsock2, ip1, ip2):
 
 def Input(sock, addr, player):
 	# [INPUT] receive keyboard input from players
-	buttonToggle = [False, False]
+	buttonToggle = [False, False, False]
 	downdic = {
 			'a': (lambda: player.physics.push(-20.0)),
 			'd': (lambda: player.physics.push(20.0)),
@@ -89,6 +89,8 @@ def Input(sock, addr, player):
 							buttonToggle[0] = False
 						elif press[1] == 'd':
 							buttonToggle[1] = False
+						elif press[1] == 's':
+							buttonToggle[3] = False
 						else:
 							updic[press[1]]()
 					except KeyError:
@@ -99,6 +101,8 @@ def Input(sock, addr, player):
 							buttonToggle[0] = True
 						elif press[1] == 'd':
 							buttonToggle[1] = True
+						elif press[1] == 's':
+							buttonToggle[3] = True
 						else:
 							downdic[press[1]]()
 					except KeyError:
@@ -111,6 +115,8 @@ def Toggle(player, buttonToggle):
 			player.physics.push(-20.0)
 		if buttonToggle[1]:
 			player.physics.push(20.0)
+		if buttonToggle[2]:
+			player.physics.duck
 		fps.tick(60)
 
 main()

@@ -54,15 +54,15 @@ class Physics: # Physics is model
 			self.controlled = True
 	def duck(self):
 		"function for player ducking"
-		self.entity.w[1] = 60
-		self.entity.s[1] += 20
 		if self.entity.a['state'] != 3:
+			self.entity.w[1] = 60
+			self.entity.s[1] += 20
 			self.entity.a = {'state':3, 'time':1}
 	def unduck(self):
 		"function for player unducking after a ducking"
-		self.entity.w[1] = 100
-		self.entity.s[1] -= 20
 		if self.entity.a['state'] != 0:
+			self.entity.w[1] = 100
+			self.entity.s[1] -= 20
 			self.entity.a = {'state':0, 'time':1}
 	def attack(self):
 		"dummy function"

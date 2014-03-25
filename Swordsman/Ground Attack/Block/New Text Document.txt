@@ -1,0 +1,1 @@
+Seq: 1 if holding or pushed backwards while enemy is on attacking state :))

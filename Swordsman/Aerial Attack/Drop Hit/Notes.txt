@@ -1,0 +1,1 @@
+Sequence: 1-6, alternate between 7 and 8 (attacks only occur at 7 and 8), constantly falls only at 6 onwards

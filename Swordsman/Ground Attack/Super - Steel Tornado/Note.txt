@@ -1,0 +1,1 @@
+Sequence: 1 - 12 Keep at 12, Switch among T-1 to T-3 and moves forward and ends with T-4
