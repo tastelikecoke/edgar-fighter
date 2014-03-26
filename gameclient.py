@@ -54,7 +54,7 @@ def Update(socket,id,surf):
 		swordiemoves[3].append(pygame.image.load(stri))
 		swordiemoves[3].append(pygame.image.load(stri))
 	bg = pygame.image.load('bg.png')
-	sf = SpriteFactory(surf,[320,240],specials=[bg])
+	sf = SpriteFactory(surf,[320,240],bg)
 	#initial entity dumps
 	entstr = ''
 	while True:
@@ -68,6 +68,7 @@ def Update(socket,id,surf):
 	floor = Entity(w=entli[4], s=entli[5])
 	wall1 = Entity(w=entli[6], s=entli[7])
 	wall2 = Entity(w=entli[8], s=entli[9])
+	sf.unpack(entli[10])
 	sf.make(player1,swordiemoves)
 	sf.make(player2,swordiemoves)
 	sf.make(floor)
@@ -88,7 +89,8 @@ def Update(socket,id,surf):
 			entitylist = cPickle.loads(stri)
 		finally:
 			pass
-		player1.w, player1.s, player2.w, player2.s, player1.a, player2.a = entitylist
+		player1.w, player1.s, player2.w, player2.s, player1.a, player2.a, _ = entitylist
+		sf.unpack(entitylist[6])
 def appendhelper(keytype,id,mode):
 	stri = id
 	if keytype == K_a:

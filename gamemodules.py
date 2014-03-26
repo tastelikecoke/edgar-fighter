@@ -3,6 +3,9 @@ import copy
 import pygame
 from pygame.locals import *
 white = pygame.Color(255,255,255)
+red = pygame.Color(255,0,0)
+blue = pygame.Color(0,0,255)
+green = pygame.Color(0,0,200)
 black = pygame.Color(0,0,0)
 BUFFER_SIZE = 1024
 
@@ -15,7 +18,7 @@ def getCorners(e):
 	corner2 = map(lambda x,y:x+y/2.0, e.s, e.w)
 	return (corner1, corner2)
 class Physics: # Physics is model
-	def __init__(self,entity,kind,v,gravity):
+	def __init__(self,factory,entity,kind,v,gravity):
 		"a physics component has a parent entity, a kind (floor,wall or player),v (velocity), and gravity"
 		self.entity = entity
 		self.controlled = False
@@ -23,6 +26,9 @@ class Physics: # Physics is model
 		self.kind = "floor" if kind == None else kind
 		self.v = [0.0,0.0] if v == None else v
 		self.gravity = 0.0 if gravity == None else gravity
+		self.hp = 100
+		self.redhp = 100
+		self.factory = factory
 		self.touchLeft = False #hack hack
 	def update(self):
 		"update the physics component of entity"
@@ -33,6 +39,8 @@ class Physics: # Physics is model
 		self.onFloor = False
 		if -1. < self.v[0] and self.v[0] < 1.:
 			self.stop()
+		if self.entity.a['state'] != 4 and self.redhp > self.hp:
+			self.redhp -= 1
 	def push(self, speed):
 		"function that makes the player walk or run (also changes sprite animation)"
 		self.v[0] += speed
@@ -65,9 +73,15 @@ class Physics: # Physics is model
 		if self.entity.a['state'] != 0:
 			self.entity.a = {'state':0, 'time':1}
 	def attack(self):
-		"dummy function"
+		"function for attackings"
 		if self.entity.a['state'] != 4:
 			self.entity.a = {'state':4, 'time':0}
+		self.factory.transferDamage(self.entity.id)
+	def damage(self):
+		"function for damaging"
+		if self.entity.a['state'] != 4:
+			self.entity.a = {'state':4, 'time':0}
+		self.hp -= 5
 	def resolve(self, jp):
 		"function that resolves player's collision with another player `jp'"
 		i = self.entity
@@ -102,10 +116,13 @@ class PhysicsFactory:
 	def __init__(self):
 		"a physics factory has backdrops and players"
 		self.backdrops = []
-		self.players = [] 
+		self.players = []
+	def pack(self):
+		packing = (self.players[0].hp,self.players[1].hp,  self.players[0].redhp, self.players[1].redhp)
+		return packing
 	def make(self,entity,v=None,gravity=None,kind=None):
 		"makes a new physics component for an entity"
-		p = Physics(entity,kind,v,gravity)
+		p = Physics(self,entity,kind,v,gravity)
 		entity.physics = p
 		if kind == "player":
 			self.players.append(p)
@@ -124,7 +141,11 @@ class PhysicsFactory:
 				p.resolve(q)
 		for p in self.players:
 			p.controlled = not p.onFloor
-
+	def transferDamage(self, id):
+		for p in self.players:
+			if p.entity.id != id:
+				print id
+				p.damage()
 class Sprite:
 	def __init__(self,factory,entity,imageset=None):
 		"a sprite has parent factory and parent entity"
@@ -172,12 +193,19 @@ class Sprite:
 			self.factory.surf.blit(self.getImage(), positionp+self.entity.s)
 		pygame.draw.rect(self.factory.surf,black,position + self.entity.w,1)
 class SpriteFactory:
-	def __init__(self,surf,origin,specials):
+	def __init__(self,surf,origin,bg):
 		"a sprite factory has the main surface surf, and origin point in camera"
 		self.surf = surf
 		self.sprites = []
 		self.origin = origin
-		self.bg = specials[0]
+		self.bg = bg
+		self.hp = [100,100]
+		self.redhp = [100,100]
+	def unpack(self,packing):
+		self.hp[0] = packing[0]
+		self.hp[1] = packing[1]
+		self.redhp[0] = packing[2]
+		self.redhp[1] = packing[3]
 	def make(self,entity,img=None):
 		"makes sprite components for entity"
 		s = Sprite(self,entity,img)
@@ -190,7 +218,13 @@ class SpriteFactory:
 		for s in self.sprites:
 			s.draw()
 		# magic sprite drawing shit [#MAGIC IN PROGRESS#]
-		pygame.draw.rect(self.surf,black,(0,0,100,100),1)
+		pygame.draw.rect(self.surf,black,(0,0,100,20),0)
+		pygame.draw.rect(self.surf,red,(0,0,self.redhp[0],20),0)
+		pygame.draw.rect(self.surf,blue,(0,0,self.hp[0],20),0)
+		
+		pygame.draw.rect(self.surf,black,(0,30,100,20),0)
+		pygame.draw.rect(self.surf,red,(0,30,self.redhp[1],20),0)
+		pygame.draw.rect(self.surf,green,(0,30,self.hp[1],20),0)
 class Entity:
 	def __init__(self,id=None,s=None,w=None,a=None):
 		"entity has s (displacement) and w (width and height) and a (animation state)"
