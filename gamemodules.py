@@ -30,6 +30,7 @@ class Physics: # Physics is model
 		self.redhp = 100
 		self.factory = factory
 		self.touchLeft = False #hack hack
+		self.onDuck = False
 	def update(self):
 		"update the physics component of entity"
 		self.v[1] += self.gravity
@@ -53,7 +54,10 @@ class Physics: # Physics is model
 	def stop(self):
 		"function that indicates the sprite animation to stop"
 		if self.entity.a['state'] == 1 or self.entity.a['state'] == 2:
-			self.entity.a = {'state':0, 'time':0}
+			if self.onDuck:
+				self.entity.a = {'state':3, 'time':1}
+			else:
+				self.entity.a = {'state':0, 'time':0}
 	def jump(self, speed):
 		"function that makes the player jump"
 		if self.onFloor:
@@ -64,13 +68,16 @@ class Physics: # Physics is model
 		"function for player ducking"
 		self.entity.w[1] = 60
 		self.entity.s[1] += 20
+		self.onDuck = True
 		if self.entity.a['state'] != 3:
 			self.entity.a = {'state':3, 'time':1}
 	def unduck(self):
 		"function for player unducking after a ducking"
 		self.entity.w[1] = 100
 		self.entity.s[1] -= 20
+		self.onDuck = False
 		if self.entity.a['state'] != 0:
+<<<<<<< HEAD
 			self.entity.a = {'state':0, 'time':1}
 	def attack(self):
 		"function for attackings"
@@ -82,6 +89,14 @@ class Physics: # Physics is model
 		if self.entity.a['state'] != 4:
 			self.entity.a = {'state':4, 'time':0}
 		self.hp -= 5
+=======
+			self.entity.a = {'state':0, 'time':0}
+	def attack(self,target):
+		"dummy function"
+		if self.entity.a['state'] != 4:
+			self.entity.a = {'state':4, 'time':0}
+		#print target.health
+>>>>>>> 7e4b5069d76b48ce095101ac222f1dc9b10aa4b1
 	def resolve(self, jp):
 		"function that resolves player's collision with another player `jp'"
 		i = self.entity
@@ -226,12 +241,13 @@ class SpriteFactory:
 		pygame.draw.rect(self.surf,red,(0,30,self.redhp[1],20),0)
 		pygame.draw.rect(self.surf,green,(0,30,self.hp[1],20),0)
 class Entity:
-	def __init__(self,id=None,s=None,w=None,a=None):
+	def __init__(self,id=None,s=None,w=None,a=None,health=None):
 		"entity has s (displacement) and w (width and height) and a (animation state)"
 		self.id = None if id == None else id
 		self.s = [0.0,0.0] if s == None else s
 		self.w = [0.0,0.0] if w == None else w
 		self.a = {'state':0,'time':0} if a == None else a
+		self.health = None if health == None else health
 		self.physics = None
 		self.sprite = None
 	def updateAnimation(self):
@@ -251,5 +267,14 @@ class Entity:
 		else:
 			pass
 	def resetAnimation(self):
+<<<<<<< HEAD
 		self.a['state'] = 0
 		self.a['time'] = 0
+=======
+		if self.physics.onDuck:
+			self.a['state'] = 3
+			self.a['time'] = 1
+		else:
+			self.a['state'] = 0
+			self.a['time'] = 0
+>>>>>>> 7e4b5069d76b48ce095101ac222f1dc9b10aa4b1

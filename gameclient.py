@@ -63,8 +63,8 @@ def Update(socket,id,surf):
 		if len(temp) < BUFFER_SIZE:
 			break
 	entli = cPickle.loads(entstr)
-	player1 = Entity(1,w=entli[0], s=entli[1])
-	player2 = Entity(2,w=entli[2], s=entli[3])
+	player1 = Entity(1,w=entli[0], s=entli[1], health=entli[10])
+	player2 = Entity(2,w=entli[2], s=entli[3], health=entli[11])
 	floor = Entity(w=entli[4], s=entli[5])
 	wall1 = Entity(w=entli[6], s=entli[7])
 	wall2 = Entity(w=entli[8], s=entli[9])
@@ -89,8 +89,12 @@ def Update(socket,id,surf):
 			entitylist = cPickle.loads(stri)
 		finally:
 			pass
+<<<<<<< HEAD
 		player1.w, player1.s, player2.w, player2.s, player1.a, player2.a, _ = entitylist
 		sf.unpack(entitylist[6])
+=======
+		player1.w, player1.s, player2.w, player2.s, player1.a, player2.a, player1.health, player2.health = entitylist
+>>>>>>> 7e4b5069d76b48ce095101ac222f1dc9b10aa4b1
 def appendhelper(keytype,id,mode):
 	stri = id
 	if keytype == K_a:
