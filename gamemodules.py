@@ -4,6 +4,10 @@ import pygame
 from pygame.locals import *
 white = pygame.Color(255,255,255)
 black = pygame.Color(0,0,0)
+
+red = pygame.Color(255,0,0)
+green = pygame.Color(0,224,0)
+blue = pygame.Color(0,0,255)
 BUFFER_SIZE = 1024
 
 def strictlygreater(a,b):
@@ -74,7 +78,13 @@ class Physics: # Physics is model
 		"dummy function"
 		if self.entity.a['state'] != 4:
 			self.entity.a = {'state':4, 'time':0}
+		if abs(target.s[0] - self.entity.s[0]) <= 40:
+			target.physics.damage()
 		#print target.health
+	def damage(self):
+		if self.entity.a['state'] != 4:
+			self.entity.a = {'state':4, 'time':0}
+		self.entity.health -= 5
 	def resolve(self, jp):
 		"function that resolves player's collision with another player `jp'"
 		i = self.entity
@@ -185,6 +195,7 @@ class SpriteFactory:
 		self.sprites = []
 		self.origin = origin
 		self.bg = specials[0]
+		self.redhp = [100,100]
 	def make(self,entity,img=None):
 		"makes sprite components for entity"
 		s = Sprite(self,entity,img)
@@ -194,18 +205,19 @@ class SpriteFactory:
 	def draw(self):
 		"draws all sprites"
 		hp = [100,100]
-		redhp = [100,100]
 		self.surf.blit(self.bg, (0,0,100,100))
 		for s in self.sprites:
 			s.draw()
 			if s.entity.health != None:
 				hp[s.entity.id-1] = s.entity.health
+				if hp[s.entity.id-1] <= self.redhp[s.entity.id-1] and s.entity.a['state'] != 4:
+					self.redhp[s.entity.id-1] -= 0.5
 		# magic sprite drawing shit [#MAGIC IN PROGRESS#]pygame.draw.rect(self.surf,black,(0,0,100,100),1)
 		pygame.draw.rect(self.surf,black,(0,0,100,20),0)
-		pygame.draw.rect(self.surf,red,(0,0,redhp[0],20),0)
+		pygame.draw.rect(self.surf,red,(0,0,self.redhp[0],20),0)
 		pygame.draw.rect(self.surf,blue,(0,0,hp[0],20),0)
 		pygame.draw.rect(self.surf,black,(0,30,100,20),0)
-		pygame.draw.rect(self.surf,red,(0,30,redhp[1],20),0)
+		pygame.draw.rect(self.surf,red,(0,30,self.redhp[1],20),0)
 		pygame.draw.rect(self.surf,green,(0,30,hp[1],20),0)
 class Entity:
 	def __init__(self,id=None,s=None,w=None,a=None,health=None):
