@@ -193,11 +193,20 @@ class SpriteFactory:
 		return s
 	def draw(self):
 		"draws all sprites"
+		hp = [100,100]
+		redhp = [100,100]
 		self.surf.blit(self.bg, (0,0,100,100))
 		for s in self.sprites:
 			s.draw()
-		# magic sprite drawing shit [#MAGIC IN PROGRESS#]
-		pygame.draw.rect(self.surf,black,(0,0,100,100),1)
+			if s.entity.health != None:
+				hp[s.entity.id-1] = s.entity.health
+		# magic sprite drawing shit [#MAGIC IN PROGRESS#]pygame.draw.rect(self.surf,black,(0,0,100,100),1)
+		pygame.draw.rect(self.surf,black,(0,0,100,20),0)
+		pygame.draw.rect(self.surf,red,(0,0,redhp[0],20),0)
+		pygame.draw.rect(self.surf,blue,(0,0,hp[0],20),0)
+		pygame.draw.rect(self.surf,black,(0,30,100,20),0)
+		pygame.draw.rect(self.surf,red,(0,30,redhp[1],20),0)
+		pygame.draw.rect(self.surf,green,(0,30,hp[1],20),0)
 class Entity:
 	def __init__(self,id=None,s=None,w=None,a=None,health=None):
 		"entity has s (displacement) and w (width and height) and a (animation state)"
