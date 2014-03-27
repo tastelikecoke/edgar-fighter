@@ -4,7 +4,7 @@ from gamemodules import *
 def main():
 	cmdsock = socket.socket()
 	updsock = socket.socket()
-	host = '127.0.0.1'
+	host = 'localhost'
 	port = 8888
 	cmdsock.connect((host,port))
 	updsock.connect((host,port))
@@ -84,11 +84,35 @@ def Update(socket,id,surf):
 			stri += temp
 			if len(temp) < BUFFER_SIZE:
 				break
+		entitylist = []
 		try:
-			entitylist = cPickle.loads(stri)
+			s = stri.split('\n')
+			for i in range(0,6):
+				s[i] = s[i].split(' ')
+				entitylist.append([])
+				for j in s[i][:-1]:
+					if i == 4 or i == 5:
+						entitylist[i].append(int(j))
+					else:
+						entitylist[i].append(float(j))
+			entitylist.append(float(s[6]))
+			entitylist.append(float(s[7]))
 		finally:
 			pass
-		player1.w, player1.s, player2.w, player2.s, player1.a, player2.a, player1.health, player2.health = entitylist
+		player1.w = entitylist[0]
+		player1.s = entitylist[1]
+		player2.w = entitylist[2]
+		player2.s = entitylist[3]
+		magic1 = entitylist[4]
+		magic2 = entitylist[5]
+		player1.health = entitylist[6]
+		player2.health = entitylist[7]
+		
+		player1.a['state'] = magic1[0]
+		player1.a['time'] = magic1[1]
+		
+		player2.a['state'] = magic2[0]
+		player2.a['time'] = magic2[1]
 def appendhelper(keytype,id,mode):
 	stri = id
 	if keytype == K_a:

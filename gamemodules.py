@@ -49,6 +49,7 @@ class Physics: # Physics is model
 		self.controlled = True
 	def stop(self):
 		"function that indicates the sprite animation to stop"
+		self.v[0] = 0
 		if self.entity.a['state'] == 1 or self.entity.a['state'] == 2:
 			if self.onDuck:
 				self.entity.a = {'state':3, 'time':1}
