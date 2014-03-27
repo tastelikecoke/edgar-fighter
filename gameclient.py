@@ -27,7 +27,9 @@ def main():
 			if event.type == KEYDOWN or event.type == KEYUP:
 				li.append(appendhelper(event.key,id,event.type))
 		if len(li) > 0:
+			print li
 			stri = cPickle.dumps(li)
+			stri += "JEMPROTOCOL"
 			numBytes = cmdsock.send(stri)
 		fps.tick(60)
 	
@@ -96,6 +98,7 @@ def Update(socket,id,surf):
 				break
 		entitylist = []
 		try:
+			s = stri.split('*')[0]
 			s = stri.split('\n')
 			for i in range(0,6):
 				s[i] = s[i].split(' ')
@@ -109,7 +112,6 @@ def Update(socket,id,surf):
 			entitylist.append(float(s[7]))
 		finally:
 			pass
-		print entitylist
 		player1.w = entitylist[0]
 		player1.s = entitylist[1]
 		player2.w = entitylist[2]

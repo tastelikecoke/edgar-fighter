@@ -57,7 +57,6 @@ def instance(cmdsock1, cmdsock2, updsock1, updsock2, ip1, ip2):
 		player1.updateAnimation()
 		player2.updateAnimation()
 		state = [player1.w, player1.s, player2.w, player2.s, player1.a.values(), player2.a.values(), player1.health, player2.health]
-		print state
 		string = ""
 		for s in state[0:6]:
 			if type(s) is list:
@@ -66,9 +65,8 @@ def instance(cmdsock1, cmdsock2, updsock1, updsock2, ip1, ip2):
 					string += " "
 			string += "\n"
 		string += str(player1.health) +"\n" + str(player2.health)
-		print string
+		string += '\n*'
 		packedState = string
-		#packedState = cPickle.dumps(state)
 		updsock1.send(packedState)
 		updsock2.send(packedState)
 		fps.tick(60)
@@ -90,12 +88,14 @@ def Input(sock, addr, player, opponent):
 	}
 	toggleThread = threading.Thread(target=Toggle, args=(player,buttonToggle))
 	toggleThread.start()
+	msg = ""
 	while True:
-		msg = sock.recv(BUFFER_SIZE)
-		if msg != '':
-			reborn = cPickle.loads(msg)
+		msg += sock.recv(BUFFER_SIZE)
+		while msg != '':
+			msgprime = msg.split('JEMPROTOCOL')[0]
+			msg = msg[len(msgprime+'JEMPROTOCOL'):]
+			reborn = cPickle.loads(msgprime)
 			for press in reborn:
-				print press
 				if press[2] == 'U':
 					try:
 						if press[1] == 'a':
