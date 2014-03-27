@@ -36,10 +36,14 @@ def Update(socket,id,surf):
 	fps = pygame.time.Clock()
 	#ball = pygame.image.load('ball.png')
 	swordiemoves = {
+		#state animations here (numbering might be confusing for states and animations)
 		0:[], #Standing
 		1:[], #Lateral movement
 		2:[], #Crouch
-		3:[], #Hit
+		3:[], #Getting hit
+		4:[], #Attack (slash)
+		5:[], #Attack (crouch slash)
+		7:[], #Block
 	}
 	swordiemoves[0].append(pygame.image.load('../edgar-fighter/Swordsman/Stand/1.png'))
 	for i in range(7):
@@ -52,7 +56,13 @@ def Update(socket,id,surf):
 		stri = '../edgar-fighter/Swordsman/Hit/'+str(i+1)+'.png'
 		swordiemoves[3].append(pygame.image.load(stri))
 		swordiemoves[3].append(pygame.image.load(stri))
-		swordiemoves[3].append(pygame.image.load(stri))
+	for i in range(13):
+		stri = '../edgar-fighter/Swordsman/Ground Attack/Slash/'+str(i+1)+'.png'
+		swordiemoves[4].append(pygame.image.load(stri))
+	for i in range(11):
+		stri = '../edgar-fighter/Swordsman/Ground Attack/Down Slash/'+str(i+1)+'.png'
+		swordiemoves[5].append(pygame.image.load(stri))
+	swordiemoves[7].append(pygame.image.load('../edgar-fighter/Swordsman/Ground Attack/Block/1.png'))
 	bg = pygame.image.load('bg.png')
 	sf = SpriteFactory(surf,[320,240],specials=[bg])
 	#initial entity dumps
@@ -123,6 +133,8 @@ def appendhelper(keytype,id,mode):
 		stri = stri+'w'
 	elif keytype == K_j:
 		stri = stri+'j'
+	elif keytype == K_k:
+		stri = stri+'k'
 	else:
 		stri = stri+'s'
 	if mode == KEYUP:

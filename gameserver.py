@@ -82,9 +82,11 @@ def Input(sock, addr, player, opponent):
 			'w': (lambda: player.physics.jump(-300.0)),
 			'j': (lambda x: player.physics.attack(x)),
 			's': player.physics.duck,
+			'k': player.physics.block,
 	}
 	updic = {
 			's': player.physics.unduck,
+			'k': player.physics.block,
 	}
 	toggleThread = threading.Thread(target=Toggle, args=(player,buttonToggle))
 	toggleThread.start()

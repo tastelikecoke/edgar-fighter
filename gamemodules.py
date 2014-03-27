@@ -29,6 +29,7 @@ class Physics: # Physics is model
 		self.gravity = 0.0 if gravity == None else gravity
 		self.touchLeft = False #hack hack
 		self.onDuck = False
+		self.onBlock = False
 	def update(self):
 		"update the physics component of entity"
 		self.v[1] += self.gravity
@@ -53,6 +54,8 @@ class Physics: # Physics is model
 		if self.entity.a['state'] == 1 or self.entity.a['state'] == 2:
 			if self.onDuck:
 				self.entity.a = {'state':3, 'time':1}
+			elif self.onBlock:
+				self.entity.a = {'state':8, 'time':1}
 			else:
 				self.entity.a = {'state':0, 'time':0}
 	def jump(self, speed):
@@ -76,16 +79,27 @@ class Physics: # Physics is model
 		if self.entity.a['state'] != 0:
 			self.entity.a = {'state':0, 'time':0}
 	def attack(self,target):
-		"dummy function"
-		if self.entity.a['state'] != 4:
-			self.entity.a = {'state':4, 'time':0}
-		if abs(target.s[0] - self.entity.s[0]) <= 40:
+		"function for attacking"
+		if self.entity.a['state'] != 4 and self.entity.a['state'] != 5:
+			if self.onDuck:
+				self.entity.a = {'state':6, 'time':0}
+			else:
+				self.entity.a = {'state':5, 'time':0}
+		if abs(target.s[0] - self.entity.s[0]) <= 40 and not target.physics.onBlock:
 			target.physics.damage()
-		#print target.health
 	def damage(self):
 		if self.entity.a['state'] != 4:
 			self.entity.a = {'state':4, 'time':0}
 		self.entity.health -= 5
+	def block(self):
+		if not self.onBlock:
+			self.onBlock = True
+			if self.entity.a['state'] != 8:
+				self.entity.a = {'state':8, 'time':1}
+		else:
+			self.onBlock = False
+			if self.entity.a['state'] != 0:
+				self.entity.a = {'state':0, 'time':0}
 	def resolve(self, jp):
 		"function that resolves player's collision with another player `jp'"
 		i = self.entity
@@ -153,20 +167,27 @@ class Sprite:
 		"gets appropriate image from the set of images (animation and all)"
 		a = self.entity.a
 		newImage = None
-		if a['time'] == 0:
+		#States here
+		if a['time'] == 0: #Standing
 			a['state'] = 0
 			newImage = self.imageset[0][0]
-		elif a['state'] == 1:
+		elif a['state'] == 1: #Forward
 			newImage = self.imageset[1][a['time']]
 			newImage.set_colorkey(white)
-		elif a['state'] == 2:
+		elif a['state'] == 2: #Backward
 			newImage = self.imageset[1][a['time']]
 			newImage.set_colorkey(white)
-		elif a['state'] == 3:
+		elif a['state'] == 3: #Crouch
 			newImage = self.imageset[2][0]
 			newImage.set_colorkey(white)
-		elif a['state'] == 4:
+		elif a['state'] == 4: #Getting hit
 			newImage = self.imageset[3][a['time']]
+		elif a['state'] == 5: #Attacking (slash)
+			newImage = self.imageset[4][a['time']]
+		elif a['state'] == 6: #Attacking (crouch slash)
+			newImage = self.imageset[5][a['time']]
+		elif a['state'] == 8: #Blocking
+			newImage = self.imageset[7][0]
 		else:
 			newImage = self.imageset[0][0]
 		newImage.set_colorkey(white)
@@ -242,13 +263,24 @@ class Entity:
 				self.resetAnimation()
 		elif self.a['state'] == 4:
 			self.a['time'] += 1
-			if self.a['time'] >= 12:
+			if self.a['time'] >= 8:
+				self.resetAnimation()
+		elif self.a['state'] == 5:
+			self.a['time'] += 1
+			if self.a['time'] >= 13:
+				self.resetAnimation()
+		elif self.a['state'] == 6:
+			self.a['time'] += 1
+			if self.a['time'] >= 11:
 				self.resetAnimation()
 		else:
 			pass
 	def resetAnimation(self):
 		if self.physics.onDuck:
 			self.a['state'] = 3
+			self.a['time'] = 1
+		elif self.physics.onBlock:
+			self.a['state'] = 8
 			self.a['time'] = 1
 		else:
 			self.a['state'] = 0
