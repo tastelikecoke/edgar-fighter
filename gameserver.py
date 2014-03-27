@@ -56,16 +56,16 @@ def instance(cmdsock1, cmdsock2, updsock1, updsock2, ip1, ip2):
 		pf.update()
 		player1.updateAnimation()
 		player2.updateAnimation()
-		state = [player1.w, player1.s, player2.w, player2.s, player1.a.values(), player2.a.values(), player1.health,player2.health]
+		state = [player1.w, player1.s, player2.w, player2.s, player1.a.values(), player2.a.values(), player1.health, player2.health]
+		print state
 		string = ""
-		for s in state:
+		for s in state[0:6]:
 			if type(s) is list:
 				for t in s:
 					string += str(t)
 					string += " "
-			else:
-				string += str(t)
 			string += "\n"
+		string += str(player1.health) +"\n" + str(player2.health)
 		print string
 		packedState = string
 		#packedState = cPickle.dumps(state)

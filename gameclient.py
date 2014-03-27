@@ -109,6 +109,7 @@ def Update(socket,id,surf):
 			entitylist.append(float(s[7]))
 		finally:
 			pass
+		print entitylist
 		player1.w = entitylist[0]
 		player1.s = entitylist[1]
 		player2.w = entitylist[2]
