@@ -41,6 +41,8 @@ class Physics: # Physics is model
 			self.stop()
 	def push(self, speed):
 		"function that makes the player walk or run (also changes sprite animation)"
+		if self.entity.health <= 0:
+			return
 		self.v[0] += speed
 		#print self.entity.a
 		if speed > 0.0 and self.entity.a['state'] != 1:
@@ -56,16 +58,22 @@ class Physics: # Physics is model
 				self.entity.a = {'state':3, 'time':1}
 			elif self.onBlock:
 				self.entity.a = {'state':8, 'time':1}
+			elif self.entity.health <= 0:
+				self.entity.a = {'state':9, 'time':1}
 			else:
 				self.entity.a = {'state':0, 'time':0}
 	def jump(self, speed):
 		"function that makes the player jump"
+		if self.entity.health <= 0:
+			return
 		if self.onFloor:
 			self.v[1] += speed
 			self.entity.s[1] -= 1
 			self.controlled = True
 	def duck(self):
 		"function for player ducking"
+		if self.entity.health <= 0:
+			return
 		self.entity.w[1] = 60
 		self.entity.s[1] += 20
 		self.onDuck = True
@@ -73,6 +81,8 @@ class Physics: # Physics is model
 			self.entity.a = {'state':3, 'time':1}
 	def unduck(self):
 		"function for player unducking after a ducking"
+		if self.entity.health <= 0:
+			return
 		self.entity.w[1] = 100
 		self.entity.s[1] -= 20
 		self.onDuck = False
@@ -80,6 +90,8 @@ class Physics: # Physics is model
 			self.entity.a = {'state':0, 'time':0}
 	def attack(self,target):
 		"function for attacking"
+		if self.entity.health <= 0:
+			return
 		if self.entity.a['state'] != 4 and self.entity.a['state'] != 5:
 			if self.onDuck:
 				self.entity.a = {'state':6, 'time':0}
@@ -91,7 +103,15 @@ class Physics: # Physics is model
 		if self.entity.a['state'] != 4:
 			self.entity.a = {'state':4, 'time':0}
 		self.entity.health -= 5
+		if self.entity.health <= 0:
+			print "I died."
+			if self.entity.w[1] != 20:
+				self.entity.w[1] = 20
+				self.entity.s[1] += 40
+			self.entity.a = {'state':9, 'time':1}
 	def block(self):
+		if self.entity.health <= 0:
+			return
 		if not self.onBlock:
 			self.onBlock = True
 			if self.entity.a['state'] != 8:
@@ -188,6 +208,8 @@ class Sprite:
 			newImage = self.imageset[5][a['time']]
 		elif a['state'] == 8: #Blocking
 			newImage = self.imageset[7][0]
+		elif a['state'] == 9: #Dead
+			newImage = self.imageset[9][0]
 		else:
 			newImage = self.imageset[0][0]
 		newImage.set_colorkey(white)
@@ -205,11 +227,13 @@ class Sprite:
 	def draw(self):
 		"draws the sprite component of entity"
 		corner1,corner2 = getCorners(self.entity)
-		position = map(add,corner1,self.factory.origin)
-		positionp = map(add,position,(-50,0))
+		position = map(add,self.entity.s,self.factory.origin)
+		ocorner1 = map(add, corner1, self.factory.origin)
 		if self.imageset != None:
+			image = self.getImage()
+			positionp = map(lambda x,y:x-y/2,position,image.get_size())
 			self.factory.surf.blit(self.getImage(), positionp+self.entity.s)
-		pygame.draw.rect(self.factory.surf,black,position + self.entity.w,1)
+			pygame.draw.rect(self.factory.surf,black,ocorner1 + self.entity.w,1)
 class SpriteFactory:
 	def __init__(self,surf,origin,specials):
 		"a sprite factory has the main surface surf, and origin point in camera"

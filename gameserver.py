@@ -44,8 +44,9 @@ def instance(cmdsock1, cmdsock2, updsock1, updsock2, ip1, ip2):
 	#initial state dump
 	initState = [player1.w, player1.s, player2.w, player2.s, floor.w, floor.s, wall1.w, wall1.s, wall2.w, wall2.s, player1.health, player2.health]
 	packedInitState = cPickle.dumps(initState)
-	updsock1.send(packedInitState)
-	updsock2.send(packedInitState)
+	packet = packedInitState + "jemprotocolv2"
+	updsock1.send(packet)
+	updsock2.send(packet)
 	
 	thread1 = threading.Thread(target=Input, args=(cmdsock1,ip1,player1,player2))
 	thread2 = threading.Thread(target=Input, args=(cmdsock2,ip2,player2,player1))
@@ -56,19 +57,11 @@ def instance(cmdsock1, cmdsock2, updsock1, updsock2, ip1, ip2):
 		pf.update()
 		player1.updateAnimation()
 		player2.updateAnimation()
-		state = [player1.w, player1.s, player2.w, player2.s, player1.a.values(), player2.a.values(), player1.health, player2.health]
-		string = ""
-		for s in state[0:6]:
-			if type(s) is list:
-				for t in s:
-					string += str(t)
-					string += " "
-			string += "\n"
-		string += str(player1.health) +"\n" + str(player2.health)
-		string += '\n*'
-		packedState = string
-		updsock1.send(packedState)
-		updsock2.send(packedState)
+		state = [player1.w, player1.s, player2.w, player2.s, player1.a, player2.a, player1.health, player2.health]
+		packedState = cPickle.dumps(state)
+		packet = packedState + "jemprotocolv2"
+		updsock1.send(packet)
+		updsock2.send(packet)
 		fps.tick(60)
 
 def Input(sock, addr, player, opponent):
@@ -88,14 +81,14 @@ def Input(sock, addr, player, opponent):
 	}
 	toggleThread = threading.Thread(target=Toggle, args=(player,buttonToggle))
 	toggleThread.start()
-	msg = ""
+	buffer = ""
 	while True:
-		msg += sock.recv(BUFFER_SIZE)
-		while msg != '':
-			msgprime = msg.split('JEMPROTOCOL')[0]
-			msg = msg[len(msgprime+'JEMPROTOCOL'):]
-			reborn = cPickle.loads(msgprime)
-			for press in reborn:
+		buffer += sock.recv(BUFFER_SIZE)
+		while buffer != "":
+			packedInput = buffer.split('jemprotocolv2')[0]
+			buffer = buffer[len(packedInput+'jemprotocolv2'):]
+			input = cPickle.loads(packedInput)
+			for press in input:
 				if press[2] == 'U':
 					try:
 						if press[1] == 'a':
