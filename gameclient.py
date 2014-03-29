@@ -118,14 +118,15 @@ def Update(socket,id,surf):
 		surf.fill(white)
 		sf.draw()
 		pygame.display.update()
-		while True:
+		while len(buffer) < BUFFER_SIZE:
 			temp = socket.recv(BUFFER_SIZE)
 			buffer += temp
-			if len(temp) < BUFFER_SIZE:
-				break
+		print len(buffer)
 		state = []
-		packedState = buffer.split('jemprotocolv2')[0]
-		buffer = buffer[len(packedState+'jemprotocolv2'):]
+		states = buffer.split('jemprotocolv2')
+		packedState = states[-2]
+		buffer = buffer[len(buffer)-len(states[-1]):]
+		#buffer = buffer[len(packedState+'jemprotocolv2'):]
 		state = cPickle.loads(packedState)
 		player1.w = state[0]
 		player1.s = state[1]

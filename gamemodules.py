@@ -8,7 +8,7 @@ black = pygame.Color(0,0,0)
 red = pygame.Color(255,0,0)
 green = pygame.Color(0,224,0)
 blue = pygame.Color(0,0,255)
-BUFFER_SIZE = 1024
+BUFFER_SIZE = 256
 
 def strictlygreater(a,b):
 	"if a tuple is strictly greater than another tuple return true else false"
