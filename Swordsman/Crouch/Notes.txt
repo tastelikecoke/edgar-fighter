@@ -1,1 +1,4 @@
-Also when blocking while in crouch
+Idle when holding down
+Block when blocking
+1-6 when forward
+6-1 when backward

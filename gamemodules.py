@@ -54,10 +54,12 @@ class Physics: # Physics is model
 		"function that indicates the sprite animation to stop"
 		self.v[0] = 0
 		if self.entity.a['state'] == 1 or self.entity.a['state'] == 2:
+			if self.onDuck and self.onBlock:
+				self.entity.a = {'state':8, 'time':1}
 			if self.onDuck:
 				self.entity.a = {'state':3, 'time':1}
 			elif self.onBlock:
-				self.entity.a = {'state':8, 'time':1}
+				self.entity.a = {'state':7, 'time':1}
 			elif self.entity.health <= 0:
 				self.entity.a = {'state':9, 'time':1}
 			else:
@@ -97,8 +99,11 @@ class Physics: # Physics is model
 				self.entity.a = {'state':6, 'time':0}
 			else:
 				self.entity.a = {'state':5, 'time':0}
-		if abs(target.s[0] - self.entity.s[0]) <= 40 and not target.physics.onBlock:
-			target.physics.damage()
+		if abs(target.s[0] - self.entity.s[0]) <= 40:
+			attackerState = self.entity.a['state']
+			defenderState = target.a['state']
+			if (not defenderState == 7 and not defenderState == 8) or (not attackerState%2 == defenderState%2):
+				target.physics.damage()
 	def damage(self):
 		if self.entity.a['state'] != 4:
 			self.entity.a = {'state':4, 'time':0}
@@ -114,12 +119,18 @@ class Physics: # Physics is model
 			return
 		if not self.onBlock:
 			self.onBlock = True
-			if self.entity.a['state'] != 8:
-				self.entity.a = {'state':8, 'time':1}
+			if self.entity.a['state'] != 7 and self.entity.a['state'] != 8:
+				if not self.onDuck:
+					self.entity.a = {'state':7, 'time':1}
+				else:
+					self.entity.a = {'state':8, 'time':1}
 		else:
 			self.onBlock = False
 			if self.entity.a['state'] != 0:
-				self.entity.a = {'state':0, 'time':0}
+				if self.onDuck:
+					self.entity.a = {'state':3, 'time':1}
+				else:
+					self.entity.a = {'state':0, 'time':0}
 	def resolve(self, jp):
 		"function that resolves player's collision with another player `jp'"
 		i = self.entity
@@ -206,7 +217,9 @@ class Sprite:
 			newImage = self.imageset[4][a['time']]
 		elif a['state'] == 6: #Attacking (crouch slash)
 			newImage = self.imageset[5][a['time']]
-		elif a['state'] == 8: #Blocking
+		elif a['state'] == 7: #Blocking
+			newImage = self.imageset[6][0]
+		elif a['state'] == 8: #Blocking (crouch block)
 			newImage = self.imageset[7][0]
 		elif a['state'] == 9: #Dead
 			newImage = self.imageset[9][0]
@@ -300,11 +313,14 @@ class Entity:
 		else:
 			pass
 	def resetAnimation(self):
-		if self.physics.onDuck:
+		if self.physics.onDuck and self.physics.onBlock:
+			self.a['state'] = 8
+			self.a['time'] = 1
+		elif self.physics.onDuck:
 			self.a['state'] = 3
 			self.a['time'] = 1
 		elif self.physics.onBlock:
-			self.a['state'] = 8
+			self.a['state'] = 7
 			self.a['time'] = 1
 		else:
 			self.a['state'] = 0

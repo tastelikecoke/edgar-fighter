@@ -66,7 +66,8 @@ def Update(socket,id,surf):
 		3:[], #Getting hit
 		4:[], #Attack (slash)
 		5:[], #Attack (crouch slash)
-		7:[], #Block
+		6:[], #Block (block)
+		7:[], #Block (crouch block)
 		9:[], #Die
 	}
 	swordiemoves[0].append(pygame.image.load('./Swordsman/Stand/1.png'))
@@ -75,7 +76,7 @@ def Update(socket,id,surf):
 		swordiemoves[1].append(pygame.image.load(stri))
 		swordiemoves[1].append(pygame.image.load(stri))
 		swordiemoves[1].append(pygame.image.load(stri))
-	swordiemoves[2].append(pygame.image.load('./Swordsman/Crouch/1.png'))
+	swordiemoves[2].append(pygame.image.load('./Swordsman/Crouch/Idle/1.png'))
 	for i in range(4):
 		stri = './Swordsman/Hit/'+str(i+1)+'.png'
 		swordiemoves[3].append(pygame.image.load(stri))
@@ -86,7 +87,8 @@ def Update(socket,id,surf):
 	for i in range(11):
 		stri = './Swordsman/Ground Attack/Down Slash/'+str(i+1)+'.png'
 		swordiemoves[5].append(pygame.image.load(stri))
-	swordiemoves[7].append(pygame.image.load('./Swordsman/Ground Attack/Block/1.png'))
+	swordiemoves[6].append(pygame.image.load('./Swordsman/Ground Attack/Block/1.png'))
+	swordiemoves[7].append(pygame.image.load('./Swordsman/Crouch/Block/1.png'))
 	swordiemoves[9].append(pygame.image.load('./Swordsman/Die/1.png'))
 	
 	bg = pygame.image.load('bg.png')
@@ -121,7 +123,7 @@ def Update(socket,id,surf):
 		while len(buffer) < BUFFER_SIZE:
 			temp = socket.recv(BUFFER_SIZE)
 			buffer += temp
-		print len(buffer)
+		#print len(buffer)
 		state = []
 		states = buffer.split('jemprotocolv2')
 		packedState = states[-2]
@@ -148,8 +150,10 @@ def appendhelper(keytype,id,mode):
 		stri = stri+'j'
 	elif keytype == K_k:
 		stri = stri+'k'
-	else:
+	elif keytype == K_s:
 		stri = stri+'s'
+	else:
+		stri = stri+'`'
 	if mode == KEYUP:
 		stri = stri+'U'
 	else:
