@@ -1,7 +1,7 @@
 #!/usr/bin/python
 import socket, time, threading, cPickle, sys, copy
 from gamemodules import *
-
+superflag = False
 def main():
 	connsocket = socket.socket()
 	host = 'localhost'
@@ -24,6 +24,7 @@ def main():
 		pass
 	
 def instance(cmdsock1, cmdsock2, updsock1, updsock2, ip1, ip2):
+	global superflag
 	# [INSTANCE] game instance between two players
 	fps = pygame.time.Clock()
 	# make all the factories
@@ -50,6 +51,8 @@ def instance(cmdsock1, cmdsock2, updsock1, updsock2, ip1, ip2):
 	
 	thread1 = threading.Thread(target=Input, args=(cmdsock1,ip1,player1,player2))
 	thread2 = threading.Thread(target=Input, args=(cmdsock2,ip2,player2,player1))
+	thread1.daemon = True
+	thread2.daemon = True
 	thread1.start()
 	thread2.start()
 	# [UPDATE] send state updates to players
@@ -60,11 +63,21 @@ def instance(cmdsock1, cmdsock2, updsock1, updsock2, ip1, ip2):
 		state = [player1.w, player1.s, player2.w, player2.s, player1.a, player2.a, player1.health, player2.health]
 		packedState = cPickle.dumps(state)
 		packet = packedState + "jemprotocolv2"
-		updsock1.send(packet)
-		updsock2.send(packet)
+		if player2.health <= 0:
+			superflag = True
+			updsock1.send("winjemprotocolv2")
+			updsock2.send("losejemprotocolv2")
+		elif player1.health <= 0:
+			superflag = True
+			updsock1.send("losejemprotocolv2")
+			updsock2.send("winjemprotocolv2")
+		elif not superflag:
+			updsock1.send(packet)
+			updsock2.send(packet)
 		fps.tick(60)
 
 def Input(sock, addr, player, opponent):
+	end = False
 	# [INPUT] receive keyboard input from players
 	buttonToggle = [False, False]
 	downdic = {
@@ -80,12 +93,19 @@ def Input(sock, addr, player, opponent):
 			'k': player.physics.block,
 	}
 	toggleThread = threading.Thread(target=Toggle, args=(player,buttonToggle))
+	toggleThread.daemon = True
 	toggleThread.start()
 	buffer = ""
 	while True:
 		buffer += sock.recv(BUFFER_SIZE)
 		while buffer != "":
 			packedInput = buffer.split('jemprotocolv2')[0]
+			if packedInput == 'close':
+				end = True
+				break
+			if end:
+				sock.close()
+				break
 			buffer = buffer[len(packedInput+'jemprotocolv2'):]
 			input = cPickle.loads(packedInput)
 			for press in input:

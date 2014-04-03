@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import socket, time, threading, cPickle, sys, copy
 from gamemodules import *
+superflag = False
 def main():
 	pygame.init()
 	surf = pygame.display.set_mode((640,480))
@@ -44,17 +45,19 @@ def main():
 		events = pygame.event.get()
 		for event in events:
 			if event.type == QUIT:
+				cmdsock.send('closejemprotocolv2')
 				pygame.quit()
 				sys.exit()
-			if event.type == KEYDOWN or event.type == KEYUP:
+			if not superflag and event.type == KEYDOWN or event.type == KEYUP:
 				inputs.append(appendhelper(event.key,id,event.type))
-		if len(inputs) > 0:
-			print inputs
+		if not superflag and len(inputs) > 0:
 			packet = cPickle.dumps(inputs)
 			packet += "jemprotocolv2"
 			numBytes = cmdsock.send(packet)
 		fps.tick(60)
 def Update(socket,id,surf):
+	global superflag
+	comicsans = pygame.font.SysFont("Comic Sans MS",12)
 	# [UPDATE] get screen updates from server
 	fps = pygame.time.Clock()
 	#ball = pygame.image.load('ball.png')
@@ -118,26 +121,34 @@ def Update(socket,id,surf):
 	buffer = ""
 	while True:
 		surf.fill(white)
-		sf.draw()
-		pygame.display.update()
-		while len(buffer) < BUFFER_SIZE:
-			temp = socket.recv(BUFFER_SIZE)
-			buffer += temp
-		#print len(buffer)
-		state = []
-		states = buffer.split('jemprotocolv2')
-		packedState = states[-2]
-		buffer = buffer[len(buffer)-len(states[-1]):]
-		#buffer = buffer[len(packedState+'jemprotocolv2'):]
-		state = cPickle.loads(packedState)
-		player1.w = state[0]
-		player1.s = state[1]
-		player2.w = state[2]
-		player2.s = state[3]
-		player1.a = state[4]
-		player2.a = state[5]
-		player1.health = state[6]
-		player2.health = state[7]
+		if not superflag:
+			sf.draw()
+			pygame.display.update()
+			while len(buffer) < BUFFER_SIZE:
+				temp = socket.recv(BUFFER_SIZE)
+				buffer += temp
+			state = []
+			states = buffer.split('jemprotocolv2')
+			packedState = states[-2]
+			if packedState == 'win' or packedState == 'lose':
+				superflag = True
+				time.sleep(2)
+		if superflag:
+			words = comicsans.render('You '+packedState+'!',1,black)
+			surf.blit(words, (10,10))
+			pygame.display.update()
+			fps.tick(60)
+		else:
+			buffer = buffer[len(buffer)-len(states[-1]):]
+			state = cPickle.loads(packedState)
+			player1.w = state[0]
+			player1.s = state[1]
+			player2.w = state[2]
+			player2.s = state[3]
+			player1.a = state[4]
+			player2.a = state[5]
+			player1.health = state[6]
+			player2.health = state[7]
 def appendhelper(keytype,id,mode):
 	stri = id
 	if keytype == K_a:
