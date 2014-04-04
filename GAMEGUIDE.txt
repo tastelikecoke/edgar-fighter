@@ -1,0 +1,47 @@
+ _______  _______   _______      ___      .______          _______  __    _______  __    __  .___________. _______ .______      
+|   ____||       \ /  _____|    /   \     |   _  \        |   ____||  |  /  _____||  |  |  | |           ||   ____||   _  \     
+|  |__   |  .--.  |  |  __     /  ^  \    |  |_)  |       |  |__   |  | |  |  __  |  |__|  | `---|  |----`|  |__   |  |_)  |    
+|   __|  |  |  |  |  | |_ |   /  /_\  \   |      /        |   __|  |  | |  | |_ | |   __   |     |  |     |   __|  |      /     
+|  |____ |  '--'  |  |__| |  /  _____  \  |  |\  \----.   |  |     |  | |  |__| | |  |  |  |     |  |     |  |____ |  |\  \----.
+|_______||_______/ \______| /__/     \__\ | _| `._____|   |__|     |__|  \______| |__|  |__|     |__|     |_______|| _| `._____|
+                                                                                                                                
+
+Edgar Fighter: Fighting Game v1e-10
+Game Documentation
+
+Table of Contents
+After the table of contents .............. Protocol
+After Protocol ........................... Installation Guide
+
+PROTOCOL
+
+The game instance consists of a server and two clients. The protocol uses two socket connections for each client, namely Update
+and Command. The Command connection involves the server receiving button presses from the clients. The Update connection involves
+the server sending state updates to the clients, which are then displayed on screen.
+Initially, the server listens on a port and waits for two clients to connect. When the connections are established, the server sends
+an id (string '1' or '2') to each client using the Command sockets. The server also sends the initial states of the players through the
+Update connection. The initial Update message contains:
+	
+	[player dimensions and position, floor and wall dimensions and position, player health]
+	
+The subsequent Update messages used to relay state changes contain:
+	
+	[player dimensions and position, player animation states, player health]
+	
+These state updates are pickled before being transmitted.
+	
+On the Command side of things, each key event from user input is encoded as follows:
+
+	<player id><key identifier><key up or down>
+	e.g. 1sU
+
+All messages sent through Update and Command are appended with the delimiter 'jemprotocolv2'.
+
+The server parses the key presses, while the clients parse and unpickle the state updates.
+
+When one player thriumps over the other, the server sends a message to the clients with the following format:
+
+	'<win/lose>jemprotocolv2'
+	
+The clients then display the notifications and try their best to close all connections to officially conclude the game session.
+The server is now ready to start another game instance.

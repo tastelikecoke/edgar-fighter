@@ -46,6 +46,7 @@ def main():
 		for event in events:
 			if event.type == QUIT:
 				cmdsock.send('closejemprotocolv2')
+				cmdsock.shutdown(socket.SHUT_WR)
 				pygame.quit()
 				sys.exit()
 			if not superflag and event.type == KEYDOWN or event.type == KEYUP:
@@ -55,7 +56,7 @@ def main():
 			packet += "jemprotocolv2"
 			numBytes = cmdsock.send(packet)
 		fps.tick(60)
-def Update(socket,id,surf):
+def Update(sock,id,surf):
 	global superflag
 	comicsans = pygame.font.SysFont("Comic Sans MS",12)
 	# [UPDATE] get screen updates from server
@@ -99,7 +100,7 @@ def Update(socket,id,surf):
 	#initial entity dumps
 	buffer = ""
 	while True:
-		temp = socket.recv(BUFFER_SIZE)
+		temp = sock.recv(BUFFER_SIZE)
 		buffer += temp
 		if len(temp) < BUFFER_SIZE:
 			break
@@ -125,14 +126,16 @@ def Update(socket,id,surf):
 			sf.draw()
 			pygame.display.update()
 			while len(buffer) < BUFFER_SIZE:
-				temp = socket.recv(BUFFER_SIZE)
+				temp = sock.recv(BUFFER_SIZE)
 				buffer += temp
 			state = []
 			states = buffer.split('jemprotocolv2')
 			packedState = states[-2]
 			if packedState == 'win' or packedState == 'lose':
+				sock.shutdown(socket.SHUT_RDWR)
+				sock.close()
 				superflag = True
-				time.sleep(2)
+				time.sleep(1)
 		if superflag:
 			words = comicsans.render('You '+packedState+'!',1,black)
 			surf.blit(words, (10,10))

@@ -11,17 +11,16 @@ def main():
 	connsocket.listen(5)
 	
 	# [MAIN SERVER THREAD] accepts connections from two players and makes a game instance (ideally should fork a process, pero threading muna)
-	cmdsock1, ip1 = connsocket.accept()
-	updsock1, ip1 = connsocket.accept()
-	cmdsock2, ip2 = connsocket.accept()
-	updsock2, ip2 = connsocket.accept()
-	cmdsock1.send('1')
-	cmdsock2.send('2')
-	tr = threading.Thread(target=instance, args = (cmdsock1, cmdsock2, updsock1, updsock2, ip1, ip2))
-	tr.daemon = True
-	tr.start()
 	while True:
-		pass
+		cmdsock1, ip1 = connsocket.accept()
+		updsock1, ip1 = connsocket.accept()
+		cmdsock2, ip2 = connsocket.accept()
+		updsock2, ip2 = connsocket.accept()
+		cmdsock1.send('1')
+		cmdsock2.send('2')
+		tr = threading.Thread(target=instance, args = (cmdsock1, cmdsock2, updsock1, updsock2, ip1, ip2))
+		tr.daemon = True
+		tr.start()
 	
 def instance(cmdsock1, cmdsock2, updsock1, updsock2, ip1, ip2):
 	global superflag
@@ -65,13 +64,19 @@ def instance(cmdsock1, cmdsock2, updsock1, updsock2, ip1, ip2):
 		packet = packedState + "jemprotocolv2"
 		if player2.health <= 0:
 			superflag = True
-			updsock1.send("winjemprotocolv2")
-			updsock2.send("losejemprotocolv2")
+			try:
+				updsock1.send("winjemprotocolv2")
+				updsock2.send("losejemprotocolv2")
+			except Exception:
+				pass
 		elif player1.health <= 0:
 			superflag = True
-			updsock1.send("losejemprotocolv2")
-			updsock2.send("winjemprotocolv2")
-		elif not superflag:
+			try:
+				updsock1.send("losejemprotocolv2")
+				updsock2.send("winjemprotocolv2")
+			except Exception:
+				pass
+		else:
 			updsock1.send(packet)
 			updsock2.send(packet)
 		fps.tick(60)
@@ -103,9 +108,6 @@ def Input(sock, addr, player, opponent):
 			if packedInput == 'close':
 				end = True
 				break
-			if end:
-				sock.close()
-				break
 			buffer = buffer[len(packedInput+'jemprotocolv2'):]
 			input = cPickle.loads(packedInput)
 			for press in input:
@@ -131,7 +133,10 @@ def Input(sock, addr, player, opponent):
 							downdic[press[1]]()
 					except KeyError:
 						pass
-
+		if end:
+			print 'closed command socket from '+addr[0]
+			sock.close()
+			break
 def Toggle(player, buttonToggle):
 	fps = pygame.time.Clock()
 	while True:
