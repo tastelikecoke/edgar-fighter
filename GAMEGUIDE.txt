@@ -45,3 +45,13 @@ When one player thriumps over the other, the server sends a message to the clien
 	
 The clients then display the notifications and try their best to close all connections to officially conclude the game session.
 The server is now ready to start another game instance.
+
+INSTALLATION & RUNx
+
+Download the files from "https://github.com/tastelikecoke/edgar-fighter".
+
+Run "gameserver.py".
+
+You may run multiple clients desired as long as the server can keep on creating threads. A game instance will be initialized once there are available pair of clients.
+
+Enjoy!
